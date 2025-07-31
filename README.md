@@ -1,0 +1,1 @@
+This Extension at the moment does nothing but opening a window if there is a paseto token detected in a sent request. This window shows the parts of the paseto token and the whole token.
