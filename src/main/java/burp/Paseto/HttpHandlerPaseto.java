@@ -36,7 +36,7 @@ public class HttpHandlerPaseto implements HttpHandler {
             PasetoInfo info = parsePaseto(pasetoToken);
 
             // Present editable dialog (modal – blocks until the user decides)
-            String editedToken = showEditablePasetoDialog(info);
+            String editedToken = showEditablePasetoDialog(info, pasetoToken);
             if (!editedToken.equals(pasetoToken)) {
                 // Replace the token everywhere it occurs (header/body first hit).
                 request = replaceTokenInRequest(request, pasetoToken, editedToken);
@@ -88,25 +88,40 @@ public class HttpHandlerPaseto implements HttpHandler {
      * Returns the (possibly edited) token when the user clicks OK; otherwise the
      * original token unchanged when Cancel/Close is chosen.
      */
-    private String showEditablePasetoDialog(PasetoInfo info) {
-        JTextField versionField = new JTextField(info.version);
-        JTextField purposeField = new JTextField(info.purpose);
-        JTextField payloadField = new JTextField(info.payload);
-        JTextField footerField  = new JTextField(info.footer);
+    private String showEditablePasetoDialog(PasetoInfo info, String rawToken) {
+        JTextField versionField  = new JTextField(info.version, 24);
+        JTextField purposeField  = new JTextField(info.purpose, 24);
+        JTextField payloadField  = new JTextField(info.payload, 24);
+        JTextField footerField   = new JTextField(info.footer, 24);
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 2));
-        panel.add(new JLabel("Version:"));  panel.add(versionField);
-        panel.add(new JLabel("Purpose:"));  panel.add(purposeField);
-        panel.add(new JLabel("Payload:"));  panel.add(payloadField);
-        panel.add(new JLabel("Footer:"));   panel.add(footerField);
+        JTextArea tokenArea = new JTextArea(rawToken, 3, 48);
+        tokenArea.setLineWrap(true);
+        tokenArea.setWrapStyleWord(true);
+        tokenArea.setEditable(false);
+        tokenArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
-        int result = JOptionPane.showConfirmDialog(
-                /* parent */ null,
-                panel,
-                "Edit PASETO token before sending",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
+        JPanel fieldPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 0; gbc.gridy = 0; fieldPanel.add(new JLabel("Version:"), gbc);
+        gbc.gridx = 1; fieldPanel.add(versionField, gbc);
+        gbc.gridx = 0; gbc.gridy++; fieldPanel.add(new JLabel("Purpose:"), gbc);
+        gbc.gridx = 1; fieldPanel.add(purposeField, gbc);
+        gbc.gridx = 0; gbc.gridy++; fieldPanel.add(new JLabel("Payload:"), gbc);
+        gbc.gridx = 1; fieldPanel.add(payloadField, gbc);
+        gbc.gridx = 0; gbc.gridy++; fieldPanel.add(new JLabel("Footer:"), gbc);
+        gbc.gridx = 1; fieldPanel.add(footerField, gbc);
 
+        JPanel mainPanel = new JPanel(new BorderLayout(5,5));
+        mainPanel.add(fieldPanel, BorderLayout.NORTH);
+        mainPanel.add(new JLabel("Raw token:"), BorderLayout.CENTER);
+        mainPanel.add(new JScrollPane(tokenArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.SOUTH);
+        mainPanel.setPreferredSize(new Dimension(600, 300));
+
+        int result = JOptionPane.showConfirmDialog(null, mainPanel,
+                "Edit PASETO token before sending", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             // Build token from user‑supplied text – omit footer if left blank
             StringBuilder sb = new StringBuilder();
