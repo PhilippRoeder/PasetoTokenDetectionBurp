@@ -4,51 +4,52 @@ import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
-
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * A Burp Suite Montoya HTTP handler that detects PASETO tokens in outbound requests and
- * pops up a small Swing dialog showing the decoded metadata (version, purpose, payload, footer).
- * The dialog is informational only and can simply be clicked away.
+ * lets the user change the individual token parts (version, purpose, payload, footer)
+ * in a small Swing dialog *before* the request is sent.
  */
 public class HttpHandlerPaseto implements HttpHandler {
 
-    /*
-     * Very small RegEx that matches both local and public tokens (v1–v4)
-     * It purposely does **not** attempt to validate the token cryptographically –
-     * that is not required here. We just want to pattern‑match and split the pieces.
+    /**
+     * Simple RegEx that matches both local and public PASETO tokens (v1–v4).
+     * No cryptographic validation is performed – we only need to locate and split it.
      */
     private static final Pattern PASETO_PATTERN =
             Pattern.compile("v[0-9]\\.(local|public)\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)?");
 
-    public HttpHandlerPaseto() {
-    }
-
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
-        // Keep the sample header‑injection the user already had.
-        HttpRequest modifiedRequest = httpRequestToBeSent.withAddedHeader("test", "1");
+        // Example header injection kept from the original sample
+        HttpRequest request = httpRequestToBeSent.withAddedHeader("test", "1");
 
         // Look for a PASETO token in headers or body
-        String pasetoToken = findPasetoToken(modifiedRequest);
+        String pasetoToken = findPasetoToken(request);
         if (pasetoToken != null) {
             PasetoInfo info = parsePaseto(pasetoToken);
 
-            // Ensure GUI updates happen on the EDT
-            SwingUtilities.invokeLater(() -> showPasetoDialog(info, pasetoToken));
+            // Present editable dialog (modal – blocks until the user decides)
+            String editedToken = showEditablePasetoDialog(info);
+            if (!editedToken.equals(pasetoToken)) {
+                // Replace the token everywhere it occurs (header/body first hit).
+                request = replaceTokenInRequest(request, pasetoToken, editedToken);
+            }
         }
 
-        // Let Burp continue with the (potentially) modified request
-        return RequestToBeSentAction.continueWith(modifiedRequest);
+        // Continue with the (possibly) modified request
+        return RequestToBeSentAction.continueWith(request);
     }
 
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived httpResponseReceived) {
-        // We don’t need to do anything with the response for this extension.
-        return null;
+        return null; // No response processing needed.
     }
 
     /**
@@ -65,46 +66,98 @@ public class HttpHandlerPaseto implements HttpHandler {
         }
 
         // 2) Body (JSON, form‑encoded, etc.)
-        String body = request.bodyToString();
-        Matcher m = PASETO_PATTERN.matcher(body);
+        Matcher m = PASETO_PATTERN.matcher(request.bodyToString());
         if (m.find()) {
             return m.group();
         }
         return null;
     }
 
-    /**
-     * Splits a PASETO token into its basic components. Does not attempt any cryptographic validation.
-     */
+    /** Splits the token into its dot‑separated components. */
     private PasetoInfo parsePaseto(String token) {
         String[] parts = token.split("\\.");
         String version = parts.length > 0 ? parts[0] : "";
         String purpose = parts.length > 1 ? parts[1] : "";
         String payload = parts.length > 2 ? parts[2] : "";
-        String footer = parts.length > 3 ? parts[3] : null;
+        String footer  = parts.length > 3 ? parts[3] : "";
         return new PasetoInfo(version, purpose, payload, footer);
     }
 
     /**
-     * Very small Swing dialog that shows the parsed token details.
+     * Builds a modal dialog with text fields so the user can tweak each part.
+     * Returns the (possibly edited) token when the user clicks OK; otherwise the
+     * original token unchanged when Cancel/Close is chosen.
      */
-    private void showPasetoDialog(PasetoInfo info, String rawToken) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("PASETO token detected:\n\n");
-        sb.append("Version:  ").append(info.version).append('\n');
-        sb.append("Purpose:  ").append(info.purpose).append('\n');
-        sb.append("Payload (Base64Url):  ").append(info.payload).append('\n');
-        if (info.footer != null) {
-            sb.append("Footer (Base64Url):  ").append(info.footer).append('\n');
-        }
-        sb.append("\nRaw token:\n").append(rawToken);
+    private String showEditablePasetoDialog(PasetoInfo info) {
+        JTextField versionField = new JTextField(info.version);
+        JTextField purposeField = new JTextField(info.purpose);
+        JTextField payloadField = new JTextField(info.payload);
+        JTextField footerField  = new JTextField(info.footer);
 
-        JOptionPane.showMessageDialog(null, sb.toString(), "PASETO Details", JOptionPane.INFORMATION_MESSAGE);
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 2));
+        panel.add(new JLabel("Version:"));  panel.add(versionField);
+        panel.add(new JLabel("Purpose:"));  panel.add(purposeField);
+        panel.add(new JLabel("Payload:"));  panel.add(payloadField);
+        panel.add(new JLabel("Footer:"));   panel.add(footerField);
+
+        int result = JOptionPane.showConfirmDialog(
+                /* parent */ null,
+                panel,
+                "Edit PASETO token before sending",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            // Build token from user‑supplied text – omit footer if left blank
+            StringBuilder sb = new StringBuilder();
+            sb.append(versionField.getText().trim())
+                    .append('.')
+                    .append(purposeField.getText().trim())
+                    .append('.')
+                    .append(payloadField.getText().trim());
+            String footerText = footerField.getText().trim();
+            if (!footerText.isEmpty()) {
+                sb.append('.').append(footerText);
+            }
+            return sb.toString();
+        }
+        // No change
+        return String.join(".", info.version, info.purpose, info.payload, info.footer).replaceAll("\\.$", "");
     }
 
     /**
-     * Simple value object.
+     * Replaces the first occurrence of oldToken with newToken in both headers and body.
+     * Uses the Montoya API's withUpdatedHeaders method for bulk header replacement.
      */
+    private HttpRequest replaceTokenInRequest(HttpRequest original, String oldToken, String newToken) {
+        HttpRequest updated = original;
+
+        // --- Headers ---
+        List<HttpHeader> modifiedHeaders = new ArrayList<>();
+        boolean headerChanged = false;
+        for (HttpHeader h : original.headers()) {
+            String newValue = h.value().replaceFirst(Pattern.quote(oldToken), Matcher.quoteReplacement(newToken));
+            if (!newValue.equals(h.value())) {
+                headerChanged = true;
+                modifiedHeaders.add(HttpHeader.httpHeader(h.name(), newValue));
+            } else {
+                modifiedHeaders.add(h);
+            }
+        }
+        if (headerChanged) {
+            updated = updated.withUpdatedHeaders(modifiedHeaders);
+        }
+
+        // --- Body (first occurrence) ---
+        String body = updated.bodyToString();
+        if (body.contains(oldToken)) {
+            updated = updated.withBody(body.replaceFirst(Pattern.quote(oldToken), Matcher.quoteReplacement(newToken)));
+        }
+
+        return updated;
+    }
+
+    /** Holds the four high‑level token parts. */
     private static class PasetoInfo {
         final String version;
         final String purpose;
@@ -115,9 +168,7 @@ public class HttpHandlerPaseto implements HttpHandler {
             this.version = version;
             this.purpose = purpose;
             this.payload = payload;
-            this.footer = footer;
+            this.footer  = footer;
         }
     }
 }
-
-
