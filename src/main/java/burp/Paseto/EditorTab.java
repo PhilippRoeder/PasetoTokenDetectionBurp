@@ -17,9 +17,15 @@ public class EditorTab implements BurpExtension {
 
         String version = loadVersion();
         api.logging().logToOutput("Version: " + version);
-
         HttpHandlerPaseto handler = new HttpHandlerPaseto();
+
+
+        api.proxy().registerRequestHandler(new PasetoProxyHandler());
+        api.userInterface().registerContextMenuItemsProvider(new PasetoContextMenu(api, handler));
         api.http().registerHttpHandler(handler);
+
+
+
     }
 
     private String loadVersion() {
