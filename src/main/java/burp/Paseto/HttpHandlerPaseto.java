@@ -31,6 +31,7 @@ public class HttpHandlerPaseto implements HttpHandler {
             request=this.pasetoRequest;
         }
         // Continue with the (possibly) modified request
+        dirty=false;
         return RequestToBeSentAction.continueWith(request);
     }
 
@@ -44,7 +45,6 @@ public class HttpHandlerPaseto implements HttpHandler {
     }
     void setPassetoRequest(HttpRequest request){
         this.pasetoRequest=request;
-        this.dirty=false;
     }
 
     /** Holds the four high‑level token parts. */

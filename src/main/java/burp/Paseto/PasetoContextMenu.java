@@ -79,7 +79,6 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
             this.handler.setDirty(true);
             this.handler.setPassetoRequest(modifiedRequest);
 
-            api.http().sendRequest(modifiedRequest);
 
 
         });
@@ -166,7 +165,7 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
         wholeField.setWrapStyleWord(true);
         wholePanel.add(new JScrollPane(wholeField, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
-        JButton submitWhole = new JButton("Submit");
+        JButton submitWhole = new JButton("Save");
         wholePanel.add(submitWhole, BorderLayout.EAST);
 
         // Part‑wise edit panel
@@ -187,7 +186,7 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
         gbc.gridx = 0; gbc.gridy++; partsPanel.add(new JLabel("Footer:"), gbc);
         JTextField footerField = new JTextField(info.footer, 24);
         gbc.gridx = 1; partsPanel.add(footerField, gbc);
-        JButton submitParts = new JButton("Submit");
+        JButton submitParts = new JButton("Save");
         gbc.gridx = 1; gbc.gridy++; gbc.anchor = GridBagConstraints.EAST; partsPanel.add(submitParts, gbc);
 
         JPanel center = new JPanel();
