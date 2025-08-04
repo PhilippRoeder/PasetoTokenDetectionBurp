@@ -32,7 +32,9 @@ public class HttpHandlerPaseto implements HttpHandler {
         }
         // Continue with the (possibly) modified request
         dirty=false;
-        return RequestToBeSentAction.continueWith(request);
+        Annotations annotations = Annotations.annotations(null, HighlightColor.GREEN);
+
+        return RequestToBeSentAction.continueWith(request, annotations);
     }
 
     @Override
