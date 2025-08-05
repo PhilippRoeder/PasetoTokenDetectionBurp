@@ -78,6 +78,7 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
 
             this.handler.setDirty(true);
             this.handler.setPassetoRequest(modifiedRequest);
+            this.handler.setId(modifiedRequest.hashCode());
 
 
 

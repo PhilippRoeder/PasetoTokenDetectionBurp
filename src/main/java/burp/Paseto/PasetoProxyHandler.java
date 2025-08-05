@@ -26,7 +26,7 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
         boolean pasetoToken = this.findPasetoToken(interceptedRequest);
         if (pasetoToken) {
 
-            annotations = Annotations.annotations(null, HighlightColor.ORANGE);
+            annotations = Annotations.annotations(null, HighlightColor.GREEN);
         }
 
             // Continue with the (possibly) modified request
