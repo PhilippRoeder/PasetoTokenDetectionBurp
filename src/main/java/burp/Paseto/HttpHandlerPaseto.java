@@ -26,14 +26,16 @@ public class HttpHandlerPaseto implements HttpHandler {
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
         // Example header injection kept from the original sample
+        Annotations annotations = Annotations.annotations(null, null);
         HttpRequest request=httpRequestToBeSent;
         if(dirty){
             request=this.pasetoRequest;
+            annotations = Annotations.annotations(null, HighlightColor.GREEN);
         }
         // Continue with the (possibly) modified request
-        dirty=false;
-        Annotations annotations = Annotations.annotations(null, HighlightColor.GREEN);
 
+
+        dirty=false;
         return RequestToBeSentAction.continueWith(request, annotations);
     }
 
