@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 public class HttpHandlerPaseto implements HttpHandler {
     private boolean dirty;
     private HttpRequest pasetoRequest;
+    private int hash_id;
 
     public HttpHandlerPaseto(){
 
@@ -28,7 +29,7 @@ public class HttpHandlerPaseto implements HttpHandler {
         // Example header injection kept from the original sample
         Annotations annotations = Annotations.annotations(null, null);
         HttpRequest request=httpRequestToBeSent;
-        if(dirty){
+        if(dirty&&(httpRequestToBeSent.hashCode()==hash_id)){
             request=this.pasetoRequest;
             annotations = Annotations.annotations(null, HighlightColor.GREEN);
         }
@@ -49,6 +50,14 @@ public class HttpHandlerPaseto implements HttpHandler {
     }
     void setPassetoRequest(HttpRequest request){
         this.pasetoRequest=request;
+    }
+
+    public int getId() {
+        return hash_id;
+    }
+
+    public void setId(int hash_id) {
+        this.hash_id = hash_id;
     }
 
     /** Holds the four high‑level token parts. */
