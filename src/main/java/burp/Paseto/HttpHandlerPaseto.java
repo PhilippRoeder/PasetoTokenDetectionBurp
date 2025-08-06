@@ -3,16 +3,8 @@ package burp.Paseto;
 import burp.api.montoya.core.Annotations;
 import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.http.handler.*;
-import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
-import burp.api.montoya.http.message.responses.HttpResponse;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 
 public class HttpHandlerPaseto implements HttpHandler {
@@ -21,7 +13,6 @@ public class HttpHandlerPaseto implements HttpHandler {
     private int hash_id;
 
     public HttpHandlerPaseto(){
-
     }
 
     @Override
@@ -52,26 +43,10 @@ public class HttpHandlerPaseto implements HttpHandler {
         this.pasetoRequest=request;
     }
 
-    public int getId() {
-        return hash_id;
-    }
 
     public void setId(int hash_id) {
         this.hash_id = hash_id;
     }
 
-    /** Holds the four high‑level token parts. */
-    private static class PasetoInfo {
-        final String version;
-        final String purpose;
-        final String payload;
-        final String footer;
 
-        PasetoInfo(String version, String purpose, String payload, String footer) {
-            this.version = version;
-            this.purpose = purpose;
-            this.payload = payload;
-            this.footer  = footer;
-        }
-    }
 }

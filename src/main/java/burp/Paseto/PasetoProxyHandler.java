@@ -3,7 +3,6 @@ package burp.Paseto;
 
 import burp.api.montoya.core.Annotations;
 import burp.api.montoya.core.HighlightColor;
-import burp.api.montoya.http.handler.RequestToBeSentAction;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.proxy.http.InterceptedRequest;
