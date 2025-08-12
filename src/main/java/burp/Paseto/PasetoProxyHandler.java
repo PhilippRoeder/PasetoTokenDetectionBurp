@@ -47,8 +47,8 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
         }
 
         @Override
-        public ProxyRequestToBeSentAction handleRequestToBeSent (InterceptedRequest interceptedRequest){
-            return null;
+        public ProxyRequestToBeSentAction handleRequestToBeSent(InterceptedRequest r) {
+            return ProxyRequestToBeSentAction.continueWith(r);
         }
 
         private boolean findPasetoToken (HttpRequest request){

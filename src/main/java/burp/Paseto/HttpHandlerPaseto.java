@@ -27,7 +27,7 @@ public class HttpHandlerPaseto implements HttpHandler {
         // Example header injection kept from the original sample
         Annotations annotations = Annotations.annotations(null, null);
         HttpRequest request=httpRequestToBeSent;
-        if(dirty&&(httpRequestToBeSent.hashCode()==hash_id)){
+        if(dirty){
             request=this.pasetoRequest;
             if(markRequests()){
                 annotations = Annotations.annotations(null, HighlightColor.GREEN);
