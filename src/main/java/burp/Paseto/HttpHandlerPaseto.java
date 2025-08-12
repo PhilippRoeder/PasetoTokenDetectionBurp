@@ -4,7 +4,7 @@ import burp.api.montoya.core.Annotations;
 import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.requests.HttpRequest;
-
+import burp.api.montoya.ui.settings.SettingsPanelWithData;
 
 
 public class HttpHandlerPaseto implements HttpHandler {
@@ -12,9 +12,14 @@ public class HttpHandlerPaseto implements HttpHandler {
     private HttpRequest pasetoRequest;
     private int hash_id;
     private boolean markRequests;
+    private SettingsPanelWithData settings;
 
-    public HttpHandlerPaseto(boolean markRequests){
-        this.markRequests=markRequests;
+    public HttpHandlerPaseto(SettingsPanelWithData settings){
+        this.settings=settings;
+    }
+
+    public boolean markRequests(){
+        return settings.getBoolean("markRequests");
     }
 
     @Override
@@ -24,7 +29,7 @@ public class HttpHandlerPaseto implements HttpHandler {
         HttpRequest request=httpRequestToBeSent;
         if(dirty&&(httpRequestToBeSent.hashCode()==hash_id)){
             request=this.pasetoRequest;
-            if(markRequests){
+            if(markRequests()){
                 annotations = Annotations.annotations(null, HighlightColor.GREEN);
             }
         }

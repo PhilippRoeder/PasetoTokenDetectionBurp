@@ -9,6 +9,7 @@ import burp.api.montoya.proxy.http.InterceptedRequest;
 import burp.api.montoya.proxy.http.ProxyRequestHandler;
 import burp.api.montoya.proxy.http.ProxyRequestReceivedAction;
 import burp.api.montoya.proxy.http.ProxyRequestToBeSentAction;
+import burp.api.montoya.ui.settings.SettingsPanelWithData;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,9 +18,13 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
     private static final Pattern PASETO_PATTERN =
             Pattern.compile("v[0-9]\\.(local|public)\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)?");
     private boolean markRequests;
+    private SettingsPanelWithData settings;
 
-    public PasetoProxyHandler(boolean markRequests){
-        this.markRequests=markRequests;
+    public PasetoProxyHandler(SettingsPanelWithData settings){
+        this.settings=settings;
+    }
+    public boolean markRequests(){
+        return settings.getBoolean("markRequests");
     }
 
     @Override
@@ -28,7 +33,7 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
         Annotations annotations = null;
         // Look for a PASETO token in headers or body
         boolean pasetoToken = this.findPasetoToken(interceptedRequest);
-        if (pasetoToken&&markRequests) {
+        if (pasetoToken&&markRequests()) {
 
             annotations = Annotations.annotations(null, HighlightColor.GREEN);
         }

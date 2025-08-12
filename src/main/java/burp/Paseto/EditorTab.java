@@ -13,6 +13,7 @@ import java.util.Properties;
 
 
 public class EditorTab implements BurpExtension {
+    private SettingsPanelWithData settings;
     @Override
     public void initialize(MontoyaApi api) {
         api.extension().setName("PasetoToken");
@@ -21,7 +22,7 @@ public class EditorTab implements BurpExtension {
         String version = loadVersion();
         api.logging().logToOutput("Version: " + version);
 
-        SettingsPanelWithData settings = SettingsPanelBuilder.settingsPanel()
+        settings = SettingsPanelBuilder.settingsPanel()
                 .withPersistence(SettingsPanelPersistence.USER_SETTINGS) // or PROJECT_SETTINGS
                 .withTitle("Paseto Token Settings")
                 .withDescription("Toggle request marking.")
@@ -34,10 +35,10 @@ public class EditorTab implements BurpExtension {
 
         boolean markRequests=settings.getBoolean("markRequests");
 
-        HttpHandlerPaseto handler = new HttpHandlerPaseto(markRequests);
+        HttpHandlerPaseto handler = new HttpHandlerPaseto(settings);
 
 
-        api.proxy().registerRequestHandler(new PasetoProxyHandler(markRequests));
+        api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));
         api.userInterface().registerContextMenuItemsProvider(new PasetoContextMenu(api, handler));
         api.http().registerHttpHandler(handler);
 
@@ -58,4 +59,5 @@ public class EditorTab implements BurpExtension {
             return "Error";
         }
     }
+
 }
