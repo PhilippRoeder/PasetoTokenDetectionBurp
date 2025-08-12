@@ -16,6 +16,11 @@ import java.util.regex.Pattern;
 public class PasetoProxyHandler implements ProxyRequestHandler {
     private static final Pattern PASETO_PATTERN =
             Pattern.compile("v[0-9]\\.(local|public)\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)?");
+    private boolean markRequests;
+
+    public PasetoProxyHandler(boolean markRequests){
+        this.markRequests=markRequests;
+    }
 
     @Override
     public ProxyRequestReceivedAction handleRequestReceived(InterceptedRequest interceptedRequest) {
@@ -23,7 +28,7 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
         Annotations annotations = null;
         // Look for a PASETO token in headers or body
         boolean pasetoToken = this.findPasetoToken(interceptedRequest);
-        if (pasetoToken) {
+        if (pasetoToken&&markRequests) {
 
             annotations = Annotations.annotations(null, HighlightColor.GREEN);
         }

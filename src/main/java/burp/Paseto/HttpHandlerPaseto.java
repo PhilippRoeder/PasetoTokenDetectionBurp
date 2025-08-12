@@ -11,8 +11,10 @@ public class HttpHandlerPaseto implements HttpHandler {
     private boolean dirty;
     private HttpRequest pasetoRequest;
     private int hash_id;
+    private boolean markRequests;
 
-    public HttpHandlerPaseto(){
+    public HttpHandlerPaseto(boolean markRequests){
+        this.markRequests=markRequests;
     }
 
     @Override
@@ -22,7 +24,9 @@ public class HttpHandlerPaseto implements HttpHandler {
         HttpRequest request=httpRequestToBeSent;
         if(dirty&&(httpRequestToBeSent.hashCode()==hash_id)){
             request=this.pasetoRequest;
-            annotations = Annotations.annotations(null, HighlightColor.GREEN);
+            if(markRequests){
+                annotations = Annotations.annotations(null, HighlightColor.GREEN);
+            }
         }
         // Continue with the (possibly) modified request
 
