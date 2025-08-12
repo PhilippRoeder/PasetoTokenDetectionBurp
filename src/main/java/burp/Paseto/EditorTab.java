@@ -35,7 +35,7 @@ public class EditorTab implements BurpExtension {
 
         boolean markRequests=settings.getBoolean("markRequests");
 
-        HttpHandlerPaseto handler = new HttpHandlerPaseto(settings);
+        HttpHandlerPaseto handler = new HttpHandlerPaseto(settings, api);
 
 
         api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));

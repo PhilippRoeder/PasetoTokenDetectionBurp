@@ -72,15 +72,14 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
             if (editedToken.equals(token)) {
                 return; // user cancelled or made no changes
             }
-            String id = java.util.UUID.randomUUID().toString();
+
 
             // 4. Build the modified request
             HttpRequest modifiedRequest = replaceTokenInRequest(baseRequest, token, editedToken);
-            HttpRequest tagged = modifiedRequest.withAddedHeader("X-Paseto-Edit-Id", id);
 
             this.handler.setDirty(true);
-            this.handler.setPassetoRequest(tagged);
-            this.handler.setId(id);
+            this.handler.setPassetoRequest(modifiedRequest);
+            this.handler.setId(token);
 
 
 
