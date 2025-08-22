@@ -77,7 +77,6 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
             // 4. Build the modified request
             HttpRequest modifiedRequest = replaceTokenInRequest(baseRequest, token, editedToken);
 
-            this.handler.setDirty(true);
             this.handler.setPassetoRequest(modifiedRequest);
             this.handler.setId(token);
 

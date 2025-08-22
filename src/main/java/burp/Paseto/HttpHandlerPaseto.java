@@ -19,7 +19,7 @@ public class HttpHandlerPaseto implements HttpHandler {
     private static final Pattern PASETO_PATTERN =
             Pattern.compile("v[0-9]\\.(local|public)\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)?");
 
-    private int dirty;
+
     private List<HttpRequest> pasetoRequest= new ArrayList<>();;
     //private String hash_id;
     private List<String> hash_id = new ArrayList<>();
@@ -59,7 +59,7 @@ public class HttpHandlerPaseto implements HttpHandler {
         // Continue with the (possibly) modified request
 
 
-        dirty=dirty-1;
+
         return RequestToBeSentAction.continueWith(request, annotations);
     }
 
@@ -68,9 +68,7 @@ public class HttpHandlerPaseto implements HttpHandler {
         return null; // No response processing needed.
     }
 
-    void setDirty(boolean val){
-        this.dirty=this.dirty+1;
-    }
+
     void setPassetoRequest(HttpRequest request){
         this.pasetoRequest.add(request);
     }
