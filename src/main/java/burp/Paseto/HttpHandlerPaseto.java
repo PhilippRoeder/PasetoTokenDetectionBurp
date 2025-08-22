@@ -45,7 +45,7 @@ public class HttpHandlerPaseto implements HttpHandler {
 
         api.logging().logToOutput(id);
 
-        if((dirty>0)&&(this.hash_id.contains(id))){
+        if((this.hash_id.contains(id))){
 
             int request_index=this.hash_id.indexOf(id);
             api.logging().logToOutput(request_index);
