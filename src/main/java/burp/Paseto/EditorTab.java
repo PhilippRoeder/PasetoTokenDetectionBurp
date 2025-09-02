@@ -2,7 +2,10 @@ package burp.Paseto;
 
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
-
+import burp.api.montoya.ui.settings.SettingsPanelBuilder;
+import burp.api.montoya.ui.settings.SettingsPanelPersistence;
+import burp.api.montoya.ui.settings.SettingsPanelSetting;
+import burp.api.montoya.ui.settings.SettingsPanelWithData;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -10,6 +13,7 @@ import java.util.Properties;
 
 
 public class EditorTab implements BurpExtension {
+    private SettingsPanelWithData settings;
     @Override
     public void initialize(MontoyaApi api) {
         api.extension().setName("PasetoToken");
@@ -18,8 +22,28 @@ public class EditorTab implements BurpExtension {
         String version = loadVersion();
         api.logging().logToOutput("Version: " + version);
 
-        HttpHandlerPaseto handler = new HttpHandlerPaseto();
+        settings = SettingsPanelBuilder.settingsPanel()
+                .withPersistence(SettingsPanelPersistence.USER_SETTINGS) // or PROJECT_SETTINGS
+                .withTitle("Paseto Token Settings")
+                .withDescription("Toggle request marking.")
+                .withSettings(
+                        SettingsPanelSetting.booleanSetting("markRequests", false)
+                )
+                .build();
+
+        api.userInterface().registerSettingsPanel(settings);
+
+        boolean markRequests=settings.getBoolean("markRequests");
+
+        HttpHandlerPaseto handler = new HttpHandlerPaseto(settings, api);
+
+
+        api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));
+        api.userInterface().registerContextMenuItemsProvider(new PasetoContextMenu(api, handler));
         api.http().registerHttpHandler(handler);
+
+
+
     }
 
     private String loadVersion() {
@@ -35,4 +59,5 @@ public class EditorTab implements BurpExtension {
             return "Error";
         }
     }
+
 }
