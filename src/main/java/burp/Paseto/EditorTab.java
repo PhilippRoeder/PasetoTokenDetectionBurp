@@ -17,7 +17,15 @@ public class EditorTab implements BurpExtension {
     public void initialize(MontoyaApi api) {
         api.extension().setName("PasetoToken");
 
-        // Pretty log header
+        logHeader(api);
+        setupSettings(api);
+        registerHandlers(api);
+    }
+
+    /**
+     * Logs the extension metadata in a clean, formatted header.
+     */
+    private void logHeader(MontoyaApi api) {
         api.logging().logToOutput("====================================================");
         api.logging().logToOutput(" Project Information");
         api.logging().logToOutput("====================================================");
@@ -27,9 +35,14 @@ public class EditorTab implements BurpExtension {
         api.logging().logToOutput("====================================================");
         api.logging().logToOutput(" Further logging below on found token...");
         api.logging().logToOutput("====================================================");
+    }
 
+    /**
+     * Builds and registers the settings panel for the extension.
+     */
+    private void setupSettings(MontoyaApi api) {
         settings = SettingsPanelBuilder.settingsPanel()
-                .withPersistence(SettingsPanelPersistence.USER_SETTINGS) // or PROJECT_SETTINGS
+                .withPersistence(SettingsPanelPersistence.USER_SETTINGS)
                 .withTitle("Paseto Token Settings")
                 .withDescription("Toggle request marking.")
                 .withSettings(
@@ -38,9 +51,12 @@ public class EditorTab implements BurpExtension {
                 .build();
 
         api.userInterface().registerSettingsPanel(settings);
+    }
 
-        boolean markRequests = settings.getBoolean("markRequests");
-
+    /**
+     * Registers HTTP, Proxy, and Context Menu handlers.
+     */
+    private void registerHandlers(MontoyaApi api) {
         HttpHandlerPaseto handler = new HttpHandlerPaseto(settings, api);
 
         api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));
@@ -48,23 +64,23 @@ public class EditorTab implements BurpExtension {
         api.http().registerHttpHandler(handler);
     }
 
+    /**
+     * Loads the extension version from version.properties.
+     * Falls back to "Unknown" if not found or invalid.
+     */
     private String loadVersion(MontoyaApi api) {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("version.properties")) {
-            Properties props = new Properties();
             if (input != null) {
+                Properties props = new Properties();
                 props.load(input);
                 return props.getProperty("version", "Unknown");
             } else {
-            if (input == null) {
-                return "Not Found";
+                api.logging().logToOutput("[!] version.properties not found – using fallback.");
+                return "Unknown";
             }
         } catch (Exception e) {
-            Properties props = new Properties();
-            props.load(input);
-            return props.getProperty("version", "Unknown");
-        } catch (IOException e) {
-            api.logging().logToError("Failed to load version: " + e.getMessage());
-            return "Error";
+            api.logging().logToOutput("[!] Failed to load version.properties: " + e.getMessage());
+            return "Unknown";
         }
     }
 }
