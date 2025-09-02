@@ -1,6 +1,7 @@
 package burp.Paseto;
 
 
+import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.Annotations;
 import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.http.message.HttpHeader;
@@ -19,8 +20,10 @@ public class PasetoProxyHandler implements ProxyRequestHandler {
             Pattern.compile("v[0-9]\\.(local|public)\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)?");
     private boolean markRequests;
     private SettingsPanelWithData settings;
+    private final MontoyaApi api;
 
-    public PasetoProxyHandler(SettingsPanelWithData settings){
+    public PasetoProxyHandler(SettingsPanelWithData settings,  MontoyaApi api){
+        this.api=api;
         this.settings=settings;
     }
     public boolean markRequests(){

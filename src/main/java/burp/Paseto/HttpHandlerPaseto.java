@@ -43,12 +43,9 @@ public class HttpHandlerPaseto implements HttpHandler {
         Annotations annotations = Annotations.annotations(null, null);
         HttpRequest request=httpRequestToBeSent;
 
-        api.logging().logToOutput(id);
-
         if(this.hash_id.contains(id)){
-
+            api.logging().logToOutput(id);
             int request_index=this.hash_id.indexOf(id);
-            api.logging().logToOutput(request_index);
             request=this.pasetoRequest.get(request_index).withRemovedHeader("X-Paseto-Edit-Id");
             if(markRequests()){
                 annotations = Annotations.annotations(null, HighlightColor.GREEN);
