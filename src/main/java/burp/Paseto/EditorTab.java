@@ -59,7 +59,7 @@ public class EditorTab implements BurpExtension {
     private void registerHandlers(MontoyaApi api) {
         HttpHandlerPaseto handler = new HttpHandlerPaseto(settings, api);
 
-        api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));
+        api.proxy().registerRequestHandler(new PasetoProxyHandler(settings, api));
         api.userInterface().registerContextMenuItemsProvider(new PasetoContextMenu(api, handler));
         api.http().registerHttpHandler(handler);
     }
