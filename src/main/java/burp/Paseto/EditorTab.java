@@ -10,17 +10,23 @@ import burp.api.montoya.ui.settings.SettingsPanelWithData;
 import java.io.InputStream;
 import java.util.Properties;
 
-
-
 public class EditorTab implements BurpExtension {
     private SettingsPanelWithData settings;
+
     @Override
     public void initialize(MontoyaApi api) {
         api.extension().setName("PasetoToken");
-        api.logging().logToOutput("Author: Philipp Röder");
 
-        String version = loadVersion();
-        api.logging().logToOutput("Version: " + version);
+        // Pretty log header
+        api.logging().logToOutput("====================================================");
+        api.logging().logToOutput(" Project Information");
+        api.logging().logToOutput("====================================================");
+        api.logging().logToOutput(" Author       : Philipp Röder");
+        api.logging().logToOutput(" Contributors : Sebastian Vetter, Kartik Rastogi");
+        api.logging().logToOutput(" Version      : " + loadVersion(api));
+        api.logging().logToOutput("====================================================");
+        api.logging().logToOutput(" Further logging below on found token...");
+        api.logging().logToOutput("====================================================");
 
         settings = SettingsPanelBuilder.settingsPanel()
                 .withPersistence(SettingsPanelPersistence.USER_SETTINGS) // or PROJECT_SETTINGS
@@ -33,31 +39,32 @@ public class EditorTab implements BurpExtension {
 
         api.userInterface().registerSettingsPanel(settings);
 
-        boolean markRequests=settings.getBoolean("markRequests");
+        boolean markRequests = settings.getBoolean("markRequests");
 
         HttpHandlerPaseto handler = new HttpHandlerPaseto(settings, api);
-
 
         api.proxy().registerRequestHandler(new PasetoProxyHandler(settings));
         api.userInterface().registerContextMenuItemsProvider(new PasetoContextMenu(api, handler));
         api.http().registerHttpHandler(handler);
-
-
-
     }
 
-    private String loadVersion() {
+    private String loadVersion(MontoyaApi api) {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("version.properties")) {
             Properties props = new Properties();
             if (input != null) {
                 props.load(input);
                 return props.getProperty("version", "Unknown");
             } else {
+            if (input == null) {
                 return "Not Found";
             }
         } catch (Exception e) {
+            Properties props = new Properties();
+            props.load(input);
+            return props.getProperty("version", "Unknown");
+        } catch (IOException e) {
+            api.logging().logToError("Failed to load version: " + e.getMessage());
             return "Error";
         }
     }
-
 }
