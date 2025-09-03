@@ -44,7 +44,6 @@ public class HttpHandlerPaseto implements HttpHandler {
         HttpRequest request=httpRequestToBeSent;
 
         if(this.hash_id.contains(id)){
-            api.logging().logToOutput(id);
             int request_index=this.hash_id.indexOf(id);
             request=this.pasetoRequest.get(request_index).withRemovedHeader("X-Paseto-Edit-Id");
             if(markRequests()){
