@@ -1,6 +1,7 @@
 package burp.Paseto;
 
 import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.http.message.requests.HttpRequest;
@@ -16,6 +17,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collections;
 
 /**
  * Context-menu entry that finds a PASETO token in the selected request, lets
@@ -43,6 +45,7 @@ public class PasetoContextMenu implements ContextMenuItemsProvider {
     //------------------------------------------------------------------
     @Override
     public List<Component> provideMenuItems(ContextMenuEvent menuEvent) {
+        if (!menuEvent.isFromTool(ToolType.PROXY)) return Collections.emptyList();
         List<Component> items = new ArrayList<>();
 
         JMenuItem editPaseto = new JMenuItem("Edit PASETO token");
