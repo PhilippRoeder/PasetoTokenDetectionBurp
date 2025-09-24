@@ -12,7 +12,7 @@ target/
 *.iml
 *.ipr
 .mvn/
-out/
+/out/
 
 ### Eclipse ###
 .apt_generated
